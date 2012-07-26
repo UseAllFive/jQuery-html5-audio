@@ -114,6 +114,9 @@
       }
       function __play (name) {
         __findSound(name, function(player) {
+          if ( opts.solo && null != __curr_playing_sound ) {
+            __stop(__curr_playing_sound);
+          }
           try {
             player.currentTime = 0;
             if ( 0 === this.loop_count ) {
@@ -154,6 +157,7 @@
     function _createFlashPlayer (opts) {
       /** _private */
       var __player_obj,
+          __curr_playing_sound,
           __muted = false,
           __curr_volume = 0,
           __sounds = [];
@@ -194,6 +198,9 @@
         __sounds.push(name);
       }
       function __play (name) {
+        if ( opts.solo && null != __curr_playing_sound ) {
+          __stop(__curr_playing_sound);
+        }
         __swf().play(name, 'log');
       }
       function __stop (name) {
@@ -295,7 +302,8 @@
     mute_toggle_selector: null,
     asset_container_selector: null,
     shared: {
-      loop: true
+      // Gets merged into player-specific options.
+      solo: true
     },
     html_player: {
       preload: $.noop
