@@ -44,8 +44,7 @@
   function createAudioPlayer ($root, opts) {
     // Top-level player methods are mostly just wrappers.
     /** private */
-    var _player,
-        _$asset_container;
+    var _player;
     function _createHTMLPlayer (opts) {
       /** _private */
       var __player,
@@ -105,7 +104,7 @@
         __findSound(name, null, function() {
           var snd = {
             name: name,
-            player: $('<audio autoplay="true">').appendTo(_$asset_container||$root).get(0),
+            player: $('<audio autoplay="true">').appendTo(opts.$asset_container||$root).get(0),
             loop_count: loop_count
           };
           snd.player.setAttribute('src', url);
@@ -139,8 +138,8 @@
         });
       }
       function __init () {
-        if ( this.$mute_toggle ) {
-          __initMuting(this.$mute_toggle);
+        if ( opts.$mute_toggle ) {
+          __initMuting(opts.$mute_toggle);
         }
       }
       return {
@@ -190,7 +189,7 @@
         var o = document.createElement('object');
         o.data = url;
         o.width = o.height = 0;
-        (_$asset_container||$root).append(o);
+        (opts.$asset_container||$root).append(o);
         __swf().preload(name, url, loop_count, 'log');
         __sounds.push(name);
       }
@@ -213,8 +212,8 @@
             id: opts.swf_id,
             name: opts.swf_id
           });
-        if ( this.$mute_toggle ) {
-          __initMuting(this.$mute_toggle);
+        if ( opts.$mute_toggle ) {
+          __initMuting(opts.$mute_toggle);
         }
       }
       return {
@@ -237,10 +236,10 @@
       var uid, $container;
       // Update options.
       if ( opts.mute_toggle_selector ) {
-        _player.$mute_toggle = $(opts.mute_toggle_selector);
+        opts.$mute_toggle = $(opts.mute_toggle_selector);
       }
       if ( opts.asset_container_selector ) {
-        _$asset_container = _player.$asset_container = $(opts.asset_container_selector);
+        opts.$asset_container = $(opts.asset_container_selector);
       }
       // Detected and create player.
       if ( (window.Modernizr && Modernizr.audio) ||
