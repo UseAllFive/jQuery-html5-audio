@@ -20,9 +20,9 @@
           $tpl = $el.find('.shadow-dom.track')
                     .remove().removeClass('shadow-dom');
       Modernizr.audio = $.browser.webkit = false; // Test Flash.
-      $el.audioPlayer().audioPlayer({
+      $el.audioPlayer({
         asset_container_selector: '.track-assets'
-      }).init();
+      }).audioPlayer().init();
       $.each(json, function(name, url){
         $list.append(
           $tpl.clone().show()
