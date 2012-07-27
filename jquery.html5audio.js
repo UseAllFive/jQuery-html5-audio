@@ -122,7 +122,7 @@
           snd.player.load();
         });
       }
-      function __play (name) {
+      function __play (name, onPlay) {
         __findSound(name, function(player) {
           if ( opts.solo && null != __curr_playing_sound ) {
             __stop(__curr_playing_sound);
@@ -133,14 +133,20 @@
           }
           player.play();
           __curr_playing_sound = name;
+          if ( '[object Function]' == toString.call(onPlay) ) {
+            onPlay.call(snd, snd.player);
+          }
         });
       }
-      function __stop (name) {
+      function __stop (name, onStop) {
         __findSound(name, function(player) {
           player.currentTime = 0;
           player.loop_position = 0;
           player.removeAttribute('autoplay');
           player.pause();
+          if ( '[object Function]' == toString.call(onStop) ) {
+            onStop.call(this, player);
+          }
         });
       }
       function __volume (name, vol) {
