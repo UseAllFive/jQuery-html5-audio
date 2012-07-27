@@ -100,16 +100,26 @@
       }
       /* /_private **/
       /** _public */
-      function __preload (name, url, loop_count) {
-        __findSound(name, null, function() {
+      // Callback convention is to have the sound object be the context and its
+      // `player` / element be the first argument.
+      function __preload (name, url, loop_count, onLoad, onPreload) {
+        __findSound(name, onLoad, function() {
           var snd = {
             name: name,
             player: $('<audio autoplay="true">').appendTo(opts.$asset_container||$root).get(0),
-            loop_count: loop_count
+            loop_count: loop_count||0
           };
           snd.player.setAttribute('src', url);
+          snd.player.addEventListener('loadedmetadata', function(e) {
+            if ( '[object Function]' == toString.call(onLoad) ) {
+              __sounds.push(snd);
+              onLoad.call(snd, snd.player);
+            }
+          });
+          if ( '[object Function]' == toString.call(onPreload) ) {
+            onPreload.call(snd, snd.player);
+          }
           snd.player.load();
-          __sounds.push(snd);
         });
       }
       function __play (name) {
@@ -117,13 +127,11 @@
           if ( opts.solo && null != __curr_playing_sound ) {
             __stop(__curr_playing_sound);
           }
-          try {
-            player.currentTime = 0;
-            if ( 0 === this.loop_count ) {
-              player.addEventListener('ended', __onSoundEnd, false);
-            }
-            player.play();
-          } catch (e) {}
+          player.currentTime = 0;
+          if ( 0 === this.loop_count ) {
+            player.addEventListener('ended', __onSoundEnd, false);
+          }
+          player.play();
           __curr_playing_sound = name;
         });
       }
