@@ -40,6 +40,7 @@
   // Boilerplate.
   "use strict";
   $.ua5 = $.ua5 || {};
+  var toString = Object.prototype.toString;
   /** classes */ // Section marker comment.
   function createAudioPlayer ($root, opts) {
     // Top-level player methods are mostly just wrappers.
@@ -85,15 +86,15 @@
         for ( i = 0; i < __sounds.length; i++ ) {
           snd = __sounds[i];
           if ( name == snd.name ) {
-            if ( null != onSuccess && null != snd ) {
+            if ( '[object Function]' == toString.call(onSuccess) && null != snd ) {
               onSuccess.call(snd, snd.player);
-            } else if ( null != onFailure && null == snd ) {
+            } else if ( '[object Function]' == toString.call(onFailure) && null == snd ) {
               onFailure();
             }
             return snd;
           }
         }
-        if ( null != onFailure ) {
+        if ( '[object Function]' == toString.call(onFailure) ) {
           onFailure();
         }
         return false;
