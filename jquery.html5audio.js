@@ -37,13 +37,13 @@
 //
 /*global jQuery, Zepto, swfobject, Modernizr */
 ;(function($){
-  // Boilerplate.
+  //-- Boilerplate.
   "use strict";
   $.ua5 = $.ua5 || {};
   var toString = Object.prototype.toString;
-  /** classes */ // Section marker comment.
+  /** classes */ //-- Section marker comment.
   function createAudioPlayer ($root, opts) {
-    // Top-level player methods are mostly just wrappers.
+    //-- Top-level player methods are mostly just wrappers.
     /** private */
     var _player;
     function _createHTMLPlayer (opts) {
@@ -101,9 +101,9 @@
       }
       /* /_private **/
       /** _public */
-      // Callback convention is to have the sound object be the context and its
-      // `player` / element be the first argument.
       function __preload (name, url, loop_count, onLoad, onPreload) {
+      //-- Callback convention is to have the sound object be the context and its
+      //   `player` / element be the first argument.
         __findSound(name, onLoad, function() {
           var snd = {
             name: name,
@@ -177,7 +177,7 @@
           __curr_volume = 0,
           __sounds = [];
       function __swf () {
-        // Getter only.
+        //-- Getter only.
         if ( !__player_obj ) {
           __player_obj = swfobject.getObjectById(opts.swf_id);
         }
@@ -256,26 +256,26 @@
     function _play ()    { _player.play.apply(_player, arguments);    return this; }
     function _init () {
       var uid, $container;
-      // Update options.
+      //-- Update options.
       if ( opts.mute_toggle_selector ) {
         opts.$mute_toggle = $(opts.mute_toggle_selector);
       }
       if ( opts.asset_container_selector ) {
         opts.$asset_container = $(opts.asset_container_selector);
       }
-      // Detected and create player.
+      //-- Detected and create player.
       if ( (window.Modernizr && Modernizr.audio) ||
            jQuery.browser.webkit ) {
         _player = _createHTMLPlayer($.extend(true, {}, opts.html_player, opts.shared));
       } else {
-        // Update more options.
+        //-- Update more options.
         uid = 'audio_preloader_' + (new Date()).getTime();
         if ( !opts.flash_player.swf_id ) {
-          // Generate default unique `swf_id`.
+          //-- Generate default unique `swf_id`.
           opts.flash_player.swf_id = uid;
         }
         if ( !opts.flash_player.container_id && null == $root.attr('id') ) {
-          // Generate default unique `container_id`.
+          //-- Generate default unique `container_id`.
           opts.flash_player.container_id = uid;
           $container = $root.find('.flash-audio-preloader:eq(0)');
           if ( !$container.length ) {
@@ -301,10 +301,10 @@
   /* /classes **/
   /** plugin method */
   $.fn.audioPlayer = function(opts){
-    // Try returning existing plugin api if no options are passed in.
+    //-- Try returning existing plugin api if no options are passed in.
     var api = this.eq(0).data('audioPlayer');
     if ( null != api ) { return api; }
-    // Re-apply plugin.
+    //-- Re-apply plugin.
     opts = $.extend(true, {}, $.fn.audioPlayer.defaults, opts);
     return this.each(function(){
       var $root = $(this);
@@ -328,11 +328,11 @@
       swf_id: null,
       container_id: null,
       flash_vars: {
-        // Conventional property names.
+        //-- Conventional property names.
         flashReadyCallback: $.noop
       },
       params: {
-        // Conventional property names.
+        //-- Conventional property names.
         wmode: 'transparent'
       }
     }
