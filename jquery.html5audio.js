@@ -39,8 +39,15 @@
 ;(function($){
   //-- Boilerplate.
   "use strict";
-  $.ua5 = $.ua5 || {};
-  var toString = Object.prototype.toString;
+  $.ua5 = $.ua5 || {
+    dev: {
+      log: false
+    }
+  };
+  var toString = Object.prototype.toString,
+      log = $.ua5.dev.log ? function () {
+        if ( console.log ) { console.log.apply(console, arguments); }
+      } : $.noop;
   /** classes */ //-- Section marker comment.
   function createAudioPlayer ($root, opts) {
     //-- Top-level player methods are mostly just wrappers.
