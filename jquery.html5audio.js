@@ -84,9 +84,7 @@
         });
       }
       function __onSoundEnd (e) {
-        var player = this;
-        player.currentTime = 0;
-        player.play();
+        __play(__curr_playing_sound);
       }
       function __findSound (name, onSuccess, onFailure) {
         var snd, i;
@@ -108,17 +106,20 @@
       }
       /* /_private **/
       /** _public */
-      function __preload (name, url, loop_count, onLoad, onPreload) {
       //-- Callback convention is to have the sound object be the context and its
       //   `player` / element be the first argument.
+      function __preload (name, url, onLoad, onPreload) {
         __findSound(name, onLoad, function() {
           var snd = {
             name: name,
-            player: $('<audio autoplay="true">').appendTo(opts.$asset_container||$root).get(0),
-            loop_count: loop_count||0
+            player: $('<audio>').appendTo(opts.$asset_container||$root).get(0),
+            loop_position: opts.loop_count
           };
+          if ( opts.loop ) {
+            snd.player.addEventListener('ended', __onSoundEnd, false);
+          }
           snd.player.setAttribute('src', url);
-          snd.player.addEventListener('loadedmetadata', function(e) {
+          snd.player.addEventListener('canplay', function(e) {
             if ( '[object Function]' == toString.call(onLoad) ) {
               __sounds.push(snd);
               onLoad.call(snd, snd.player);
@@ -132,12 +133,18 @@
       }
       function __play (name, onPlay) {
         __findSound(name, function(player) {
+          log('playing');
           if ( opts.solo && null != __curr_playing_sound ) {
             __stop(__curr_playing_sound);
           }
-          player.currentTime = 0;
-          if ( 0 === this.loop_count ) {
-            player.addEventListener('ended', __onSoundEnd, false);
+          if ( opts.loop ) {
+            if ( 0 === this.loop_position ) {
+              log('loop ended');
+              this.loop_position = opts.loop_count;
+            } else if ( isFinite(this.loop_position) ) {
+              log('looped');
+              this.loop_position -= 1;
+            }
           }
           player.play();
           __curr_playing_sound = name;
@@ -146,12 +153,18 @@
           }
         });
       }
-      function __stop (name, onStop) {
+      function __stop (name, pause, onStop) {
+        if ( null == pause ) {
+          pause = false;
+        }
         __findSound(name, function(player) {
-          player.currentTime = 0;
-          player.loop_position = 0;
-          player.removeAttribute('autoplay');
+          log('pausing');
+          if ( !pause ) {
+            log('stopping');
+            player.currentTime = 0;
+          }
           player.pause();
+          __curr_playing_sound = null;
           if ( '[object Function]' == toString.call(onStop) ) {
             onStop.call(this, player);
           }
@@ -211,12 +224,12 @@
       }
       /* /_private **/
       /** _public */
-      function __preload (name, url, loop_count) {
+      function __preload (name, url) {
         var o = document.createElement('object');
         o.data = url;
         o.width = o.height = 0;
         (opts.$asset_container||$root).append(o);
-        __swf().preload(name, url, loop_count, 'log');
+        __swf().preload(name, url, opts.loop, 'log');
         __sounds.push(name);
       }
       function __play (name) {
@@ -270,6 +283,7 @@
       if ( opts.asset_container_selector ) {
         opts.$asset_container = $(opts.asset_container_selector);
       }
+      opts.shared.loop *= 1; //-- Numeric type for legacy flash script support.
       //-- Detected and create player.
       if ( (window.Modernizr && Modernizr.audio) ||
            jQuery.browser.webkit ) {
@@ -324,8 +338,10 @@
     mute_toggle_selector: null,
     asset_container_selector: null,
     shared: {
-      // Gets merged into player-specific options.
-      solo: true
+      //-- Gets merged into player-specific options.
+      solo: true,
+      loop: true,
+      loop_count: Infinity
     },
     html_player: {
       preload: $.noop
