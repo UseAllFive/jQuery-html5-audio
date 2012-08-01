@@ -134,6 +134,7 @@
       function __play (name, onPlay) {
         __findSound(name, function(player) {
           log('playing');
+          var old_player = player;
           if ( opts.solo && null != __curr_playing_sound ) {
             __stop(__curr_playing_sound);
           }
@@ -144,6 +145,12 @@
             } else if ( isFinite(this.loop_position) ) {
               log('looped');
               this.loop_position -= 1;
+            }
+            //-- Workaround for currentTime not being writeable in some domain setups.
+            if ( player.currentTime === player.duration ) {
+              log('looping', __curr_playing_sound);
+              this.player = player = new Audio(player.getAttribute('src'));
+              player.addEventListener('ended', __onSoundEnd, false);
             }
           }
           player.play();
