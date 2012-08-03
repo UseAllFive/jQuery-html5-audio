@@ -181,7 +181,7 @@
           player.play();
           __curr_playing_sound = name;
           if ( '[object Function]' == toString.call(onPlay) ) {
-            onPlay.call(snd, snd.player);
+            onPlay.call(this, this.player);
           }
         });
       }
