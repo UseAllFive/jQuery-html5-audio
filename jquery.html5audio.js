@@ -149,7 +149,9 @@
             //-- Workaround for currentTime not being writeable in some domain setups.
             if ( player.currentTime === player.duration ) {
               log('looping', __curr_playing_sound);
-              this.player = player = new Audio(player.getAttribute('src'));
+              $(player).off();
+              this.player = player = null;
+              this.player = player = new Audio(old_player.getAttribute('src'));
               player.addEventListener('ended', __onSoundEnd, false);
             }
           }
