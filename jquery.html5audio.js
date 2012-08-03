@@ -110,15 +110,30 @@
       //   `player` / element be the first argument.
       function __preload (name, url, onLoad, onPreload) {
         __findSound(name, onLoad, function() {
-          var snd = {
-            name: name,
-            player: $('<audio>').appendTo(opts.$asset_container||$root).get(0),
-            loop_position: opts.loop_count
-          };
+          var $player = $('<audio>').appendTo(opts.$asset_container||$root),
+              snd = {
+                name: name,
+                player: $player.get(0),
+                loop_position: opts.loop_count
+              };
           if ( opts.loop ) {
             snd.player.addEventListener('ended', __onSoundEnd, false);
           }
-          snd.player.setAttribute('src', url);
+          $player.data('src', url);
+          $.each(opts.extensions, function(idx, ext){
+            var type;
+            if ( 'mp3' === ext ) {
+              type = 'audio/mpeg;codecs=mp3';
+            } else if ( 'ogg' == ext ) {
+              type = 'audio/ogg;codecs=vorbis';
+            }
+            $('<source>')
+              .attr({
+                src: url+'.'+ext,
+                type: type
+              })
+              .appendTo($player);
+          });
           snd.player.addEventListener('canplay', function(e) {
             if ( '[object Function]' == toString.call(onLoad) ) {
               __sounds.push(snd);
@@ -134,9 +149,9 @@
       function __play (name, onPlay) {
         __findSound(name, function(player) {
           log('playing');
-          var old_player = player;
           if ( opts.solo && null != __curr_playing_sound ) {
-            __stop(__curr_playing_sound);
+            //-- Skipping OGG playback in FF.
+            __stop(__curr_playing_sound, $.browser.mozilla);
           }
           if ( opts.loop ) {
             if ( 0 === this.loop_position ) {
@@ -147,13 +162,21 @@
               this.loop_position -= 1;
             }
             //-- Workaround for currentTime not being writeable in some domain setups.
-            if ( player.currentTime === player.duration ) {
-              log('looping', __curr_playing_sound);
-              $(player).off();
-              this.player = player = null;
-              this.player = player = new Audio(old_player.getAttribute('src'));
-              player.addEventListener('ended', __onSoundEnd, false);
-            }
+            (function(){
+              var old_player = player,
+                  src = old_player.getAttribute('src');
+              if ( null == src ) {
+                src = $(old_player).data('src')+'.'+
+                  ($.browser.mozilla ? 'ogg' : 'mp3');
+              }
+              if ( player.currentTime === player.duration ) {
+                log('looping', __curr_playing_sound);
+                $(player).off();
+                this.player = player = null;
+                this.player = player = new Audio(src);
+                player.addEventListener('ended', __onSoundEnd, false);
+              }
+            }.call(this));
           }
           player.play();
           __curr_playing_sound = name;
@@ -168,9 +191,9 @@
         }
         __findSound(name, function(player) {
           log('pausing');
-          if ( !pause ) {
+          if ( !pause && player.startTime ) {
             log('stopping');
-            player.currentTime = 0;
+            player.currentTime = player.startTime;
           }
           player.pause();
           __curr_playing_sound = null;
@@ -353,7 +376,8 @@
       loop_count: Infinity
     },
     html_player: {
-      preload: $.noop
+      preload: $.noop,
+      extensions: ['mp3', 'ogg']
     },
     flash_player: {
       swf_url: 'html5audio-multitrack-preloader.swf',
