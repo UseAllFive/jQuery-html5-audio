@@ -177,6 +177,11 @@
                 player.addEventListener('ended', __onSoundEnd, false);
               }
             }.call(this));
+          } else {
+            //-- Have this bubble so any UI can update.
+            player.addEventListener('ended', function() {
+              $(player).trigger('end');
+            }, true);
           }
           player.play();
           __curr_playing_sound = name;
